@@ -1,3 +1,7 @@
+# Nate's custom ignore
+download/
+nohup.out
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
