@@ -2,7 +2,7 @@
 # @Author: Zengjq
 # @Date:   2018-09-21 12:54:57
 # @Last Modified by:   Zengjq
-# @Last Modified time: 2018-09-21 17:27:20
+# @Last Modified time: 2018-10-10 06:41:55
 
 import scrapy
 from cartoonmad.items import CartoonmadItem
@@ -43,7 +43,7 @@ class ChapterSpider(scrapy.Spider):
         # 漫画id
         manga_no = response.url.split('/')[-1].split('.')[0]
         # 名称含有中文
-        manga_name = unicode(response.css('title::text').extract()[0][:-14])
+        manga_name = unicode(response.css('title::text').extract()[0][:-14].strip())
         manga_save_folder = os.path.join(self.download_folder, manga_no + '_' + manga_name)
         if not os.path.exists(manga_save_folder):
             # 创建多级目录 os.makedirs
@@ -76,6 +76,9 @@ class ChapterSpider(scrapy.Spider):
             yield scrapy.Request(chapter_link, meta={'manga_no': manga_no, 'chapter_no': chapter_no, 'manga_name': manga_name, 'chapter_name': chapter_name, 'chapters_pages_count': chapters_pages_count, 'chapters': chapters}, callback=self.parse_page)
 
     def parse_page(self, response):
+        """
+        scrapy shell https://www.cartoonmad.com/comic/469500002025001.html
+        """
         item = CartoonmadItem()
         manga_no = response.meta['manga_no']
         chapter_no = response.meta['chapter_no']
@@ -84,8 +87,19 @@ class ChapterSpider(scrapy.Spider):
         chapters_pages_count = response.meta['chapters_pages_count']
         chapters = response.meta['chapters']
 
-        image_url = response.css("img::attr(src)")[7].extract()
+        # image_url = response.css("img::attr(src)")[7].extract()
+        # print response.url
+        # if 'cartoonmad.com' not in image_url or '/image/panen.png' in image_url:
+        #     image_url = response.css("img::attr(src)")[6].extract()
+        image_urls = response.css("img::attr(src)").extract()
+        image_url = ''
+        for x in image_urls:
+            if 'cartoonmad.com' in x:
+                image_url = x
+                break
         image_url_parts = image_url.split('/')
+        # print image_url
+        # print image_url_parts
         image_url_prefix = image_url_parts[0] + '//' + image_url_parts[2] + '/' + image_url_parts[3] + '/'
 
         for index, chapter in enumerate(chapters):

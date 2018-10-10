@@ -1,4 +1,13 @@
 # -*- coding: utf-8 -*-
+# @Author: Zengjq
+# @Date:   2018-09-23 20:12:01
+# @Last Modified by:   Zengjq
+# @Last Modified time: 2018-10-06 09:36:37
+# Scrapy settings for wenku8 project
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
+import os
 
 # Scrapy settings for cartoonmad project
 #
@@ -94,3 +103,8 @@ ITEM_PIPELINES = {
 #HTTPCACHE_DIR = 'httpcache'
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+
+# Nate's custom settings
+# LOG_LEVEL = 'ERROR'  # to only display errors
+# LOG_FORMAT = '%(levelname)s: %(message)s'
+LOG_FILE = 'log.txt'
