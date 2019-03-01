@@ -2,7 +2,7 @@
 # @Author: Zengjq
 # @Date:   2018-09-21 12:54:57
 # @Last Modified by:   Zengjq
-# @Last Modified time: 2019-03-02 01:58:36
+# @Last Modified time: 2019-03-02 02:47:05
 
 import scrapy
 from cartoonmad.items import CartoonmadItem
@@ -43,7 +43,7 @@ class ChapterSpider(scrapy.Spider):
         # 漫画id
         manga_no = response.url.split('/')[-1].split('.')[0]
         # 名称含有中文
-        manga_name = unicode(response.css('title::text').extract()[0][:-14].strip())
+        manga_name = unicode(response.css('title::text').extract()[0][:-14].strip().replace('?', ''))
         manga_save_folder = os.path.join(self.download_folder, manga_no + '_' + manga_name)
         if not os.path.exists(manga_save_folder):
             # 创建多级目录 os.makedirs
