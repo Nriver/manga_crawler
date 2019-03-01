@@ -2,7 +2,7 @@
 # @Author: Zengjq
 # @Date:   2018-09-21 12:54:57
 # @Last Modified by:   Zengjq
-# @Last Modified time: 2019-03-01 20:46:50
+# @Last Modified time: 2019-03-02 01:49:36
 
 import scrapy
 from cartoonmad.items import CartoonmadItem
@@ -48,9 +48,10 @@ class ChapterSpider(scrapy.Spider):
         if not os.path.exists(manga_save_folder):
             # 创建多级目录 os.makedirs
             os.makedirs(manga_save_folder)
-        chapters = response.css("#info > table a")
+        #
+        chapters = response.css("body > table > tr:nth-child(1) > td:nth-child(2) > table > tr:nth-child(4) > td > table > tr:nth-child(2) > td:nth-child(2) > table:nth-child(3) > tr > td a")
         # 页数比较麻烦 selector 怎么取都会取多
-        chapters_pages = response.css("#info > table font::text")
+        chapters_pages = response.css("body > table > tr:nth-child(1) > td:nth-child(2) > table > tr:nth-child(4) > td > table > tr:nth-child(2) > td:nth-child(2) > table:nth-child(3) > tr > td font::text")
         # 每个章节的页数
         chapters_pages_count = []
         # 简单粗暴的处理
@@ -59,7 +60,7 @@ class ChapterSpider(scrapy.Spider):
             chapters_pages_count.append(page_count)
         # 找到图片存储路径
         for index, chapter in enumerate(chapters):
-            chapter_link = 'http://www.cartoonmad.com' + response.css("#info > table a::attr(href)")[index].extract()
+            chapter_link = 'http://www.cartoonmad.com' + response.css("body > table > tr:nth-child(1) > td:nth-child(2) > table > tr:nth-child(4) > td > table > tr:nth-child(2) > td:nth-child(2) > table:nth-child(3) > tr > td a::attr(href)")[index].extract()
             chapter_name = chapter.css('::text').extract()[0]
             chapter_no = chapter_name.split(' ')[1]
 
@@ -103,6 +104,7 @@ class ChapterSpider(scrapy.Spider):
         for x in image_urls:
             # new rule
             if 'comicpic.asp' in x:
+                print x
                 if x.endswith('&rimg=1'):
                     image_url_prefix = 'http://web3.cartoonmad.com/home13712/'
                 else:
@@ -128,4 +130,10 @@ class ChapterSpider(scrapy.Spider):
                 # print 'download image: ', item['imgurl']
                 item['imgname'] = str(y).zfill(3) + '.jpg'
                 item['imgfolder'] = manga_no + '_' + manga_name + '/' + chapter_name
+                img_file_path = item['imgfolder'] + '/' + item['imgname']
+                # skip files that already downloaded
+                # print img_file_path
+                if os.path.exists(img_file_path):
+                    # print 'skip', img_file_path
+                    continue
                 yield item
