@@ -2,7 +2,7 @@
 # @Author: Zengjq
 # @Date:   2018-09-21 12:54:57
 # @Last Modified by:   Zengjq
-# @Last Modified time: 2019-03-02 01:49:36
+# @Last Modified time: 2019-03-02 01:58:36
 
 import scrapy
 from cartoonmad.items import CartoonmadItem
@@ -104,7 +104,7 @@ class ChapterSpider(scrapy.Spider):
         for x in image_urls:
             # new rule
             if 'comicpic.asp' in x:
-                print x
+                # print x
                 if x.endswith('&rimg=1'):
                     image_url_prefix = 'http://web3.cartoonmad.com/home13712/'
                 else:
