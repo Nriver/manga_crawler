@@ -2,7 +2,7 @@
 # @Author: Zengjq
 # @Date:   2018-09-21 12:54:57
 # @Last Modified by:   Zengjq
-# @Last Modified time: 2018-10-10 06:41:55
+# @Last Modified time: 2019-03-01 20:46:50
 
 import scrapy
 from cartoonmad.items import CartoonmadItem
@@ -57,7 +57,6 @@ class ChapterSpider(scrapy.Spider):
         for x in range(len(chapters)):
             page_count = chapters_pages[x].extract()[1:-2]
             chapters_pages_count.append(page_count)
-
         # 找到图片存储路径
         for index, chapter in enumerate(chapters):
             chapter_link = 'http://www.cartoonmad.com' + response.css("#info > table a::attr(href)")[index].extract()
@@ -78,6 +77,7 @@ class ChapterSpider(scrapy.Spider):
     def parse_page(self, response):
         """
         scrapy shell https://www.cartoonmad.com/comic/469500002025001.html
+        scrapy shell https://www.cartoonmad.com/comic/169800012046001.html
         """
         item = CartoonmadItem()
         manga_no = response.meta['manga_no']
@@ -93,14 +93,27 @@ class ChapterSpider(scrapy.Spider):
         #     image_url = response.css("img::attr(src)")[6].extract()
         image_urls = response.css("img::attr(src)").extract()
         image_url = ''
+
+        # https://www.cartoonmad.com/comic/comicpic.asp?file=/4695/000/001
+        # https://www.cartoonmad.com/home75378/4695/000/001.jpg
+        #
+        # https://www.cartoonmad.com/comic/comicpic.asp?file=/3080/001/001&rimg=1
+        # http://web3.cartoonmad.com/home13712/3080/001/001.jpg
+        image_url_prefix = ''
         for x in image_urls:
-            if 'cartoonmad.com' in x:
+            # new rule
+            if 'comicpic.asp' in x:
+                if x.endswith('&rimg=1'):
+                    image_url_prefix = 'http://web3.cartoonmad.com/home13712/'
+                else:
+                    image_url_prefix = 'https://www.cartoonmad.com/home75378/'
+            elif 'cartoonmad' in x:
                 image_url = x
+                image_url_parts = image_url.split('/')
+                # print image_url
+                # print image_url_parts
+                image_url_prefix = image_url_parts[0] + '//' + image_url_parts[2] + '/' + image_url_parts[3] + '/'
                 break
-        image_url_parts = image_url.split('/')
-        # print image_url
-        # print image_url_parts
-        image_url_prefix = image_url_parts[0] + '//' + image_url_parts[2] + '/' + image_url_parts[3] + '/'
 
         for index, chapter in enumerate(chapters):
             chapter_name = chapter.css('::text').extract()[0]
@@ -110,8 +123,9 @@ class ChapterSpider(scrapy.Spider):
             # http://web.cartoonmad.com/c37sn562e81/3899/001/010.jpg
 
             item = CartoonmadItem()
-            for y in range(int(chapters_pages_count[index])):
+            for y in range(1, int(chapters_pages_count[index]) + 1):
                 item['imgurl'] = [image_url_prefix + manga_no + '/' + chapter_no + '/' + str(y).zfill(3) + '.jpg']
+                # print 'download image: ', item['imgurl']
                 item['imgname'] = str(y).zfill(3) + '.jpg'
                 item['imgfolder'] = manga_no + '_' + manga_name + '/' + chapter_name
                 yield item
