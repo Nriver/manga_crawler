@@ -1,6 +1,7 @@
 # manga_crawler
 Download manga from online website with scrapy.
 Spider names and the supported sites:
+
 | Spider Name | Website |
 | ------ | ------ |
 | manga | https://www.cartoonmad.com/ | 
