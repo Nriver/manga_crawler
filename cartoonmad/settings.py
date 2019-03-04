@@ -2,7 +2,7 @@
 # @Author: Zengjq
 # @Date:   2018-09-23 20:12:01
 # @Last Modified by:   Zengjq
-# @Last Modified time: 2018-10-06 09:36:37
+# @Last Modified time: 2019-03-04 16:21:11
 # Scrapy settings for wenku8 project
 import sys
 reload(sys)
@@ -75,7 +75,7 @@ ROBOTSTXT_OBEY = True
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 # 图片存储位置
 IMAGES_STORE = 'download'
-# 启动图片下载中间件
+# 启动图片下载中间件 后面的数字表示执行顺序 在有多个pipeline的时候按数字从小到大执行
 ITEM_PIPELINES = {
     'cartoonmad.pipelines.ImagespiderPipeline': 300,
 }

@@ -2,7 +2,7 @@
 # @Author: Zengjq
 # @Date:   2018-09-21 12:54:57
 # @Last Modified by:   Zengjq
-# @Last Modified time: 2019-03-02 02:47:05
+# @Last Modified time: 2019-03-04 17:56:44
 
 import scrapy
 from cartoonmad.items import CartoonmadItem
@@ -12,8 +12,8 @@ from scrapy.crawler import CrawlerProcess
 
 class ChapterSpider(scrapy.Spider):
     name = 'manga'
-    # allowed_domains = ['*.cartoonmad.com']
-    download_folder = 'download'
+    allowed_domains = ['cartoonmad.com']
+    download_folder = 'cartoonmad'
 
     def start_requests(self):
         manga_no = getattr(self, 'no', None)
@@ -31,7 +31,7 @@ class ChapterSpider(scrapy.Spider):
                 if new_url not in urls:
                     urls.append(new_url)
 
-        if manga_no is None and manga_url is None:
+        if (manga_no is None or manga_no == '') and (manga_url == None or manga_url == ''):
             urls = ['https://www.cartoonmad.com/comic/3899.html']
 
         for url in urls:
@@ -73,20 +73,20 @@ class ChapterSpider(scrapy.Spider):
         #         item['imgname'] = str(y).zfill(3) + '.jpg'
         #         item['imgfolder'] = manga_no + '_' + manga_name + '/' + chapter_name
         #         yield item
-            yield scrapy.Request(chapter_link, meta={'manga_no': manga_no, 'chapter_no': chapter_no, 'manga_name': manga_name, 'chapter_name': chapter_name, 'chapters_pages_count': chapters_pages_count, 'chapters': chapters}, callback=self.parse_page)
+            yield scrapy.Request(chapter_link, meta={'manga_no': manga_no, 'chapter_no': chapter_no, 'manga_name': manga_name, 'chapter_name': chapter_name, 'chapters_pages_count': chapters_pages_count, 'chapters': chapters, 'manga_save_folder': manga_save_folder}, callback=self.parse_page)
 
     def parse_page(self, response):
         """
         scrapy shell https://www.cartoonmad.com/comic/469500002025001.html
         scrapy shell https://www.cartoonmad.com/comic/169800012046001.html
         """
-        item = CartoonmadItem()
         manga_no = response.meta['manga_no']
         chapter_no = response.meta['chapter_no']
         manga_name = response.meta['manga_name']
         chapter_name = response.meta['chapter_name']
         chapters_pages_count = response.meta['chapters_pages_count']
         chapters = response.meta['chapters']
+        manga_save_folder = response.meta['manga_save_folder']
 
         # image_url = response.css("img::attr(src)")[7].extract()
         # print response.url
@@ -129,7 +129,7 @@ class ChapterSpider(scrapy.Spider):
                 item['imgurl'] = [image_url_prefix + manga_no + '/' + chapter_no + '/' + str(y).zfill(3) + '.jpg']
                 # print 'download image: ', item['imgurl']
                 item['imgname'] = str(y).zfill(3) + '.jpg'
-                item['imgfolder'] = manga_no + '_' + manga_name + '/' + chapter_name
+                item['imgfolder'] = manga_save_folder + '/' + chapter_name
                 img_file_path = item['imgfolder'] + '/' + item['imgname']
                 # skip files that already downloaded
                 # print img_file_path

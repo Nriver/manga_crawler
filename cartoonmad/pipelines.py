@@ -19,8 +19,11 @@ class ImagespiderPipeline(ImagesPipeline):
 
     def get_media_requests(self, item, info):
         # 循环每一张图片地址下载，若传过来的不是集合则无需循环直接yield
-        for image_url in item['imgurl']:
-            yield scrapy.Request(image_url, meta={'name': item['imgname'], 'folder': item['imgfolder']})
+        if isinstance(item['imgurl'], str):
+            yield scrapy.Request(item['imgurl'], meta={'name': item['imgname'], 'folder': item['imgfolder']})
+        else:
+            for image_url in item['imgurl']:
+                yield scrapy.Request(image_url, meta={'name': item['imgname'], 'folder': item['imgfolder']})
 
     # 重命名，若不重写这函数，图片名为哈希，就是一串乱七八糟的名字
     def file_path(self, request, response=None, info=None):
