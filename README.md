@@ -19,3 +19,6 @@ eg. To download manga "Grand Blue" from cartoonmad, the command would be like th
 ```
 scrapy crawl manga -a no=3899
 ```
+
+# other features
+There is a comicer_redis spider that works as a distributed crawler. Thanks to [scrapy-redis](https://github.com/rmax/scrapy-redis/).
