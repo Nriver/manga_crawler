@@ -1,0 +1,2 @@
+Scrapy==1.5.1
+jsbeautifier==1.9.0

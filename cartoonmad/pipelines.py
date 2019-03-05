@@ -7,6 +7,7 @@
 
 import scrapy
 from scrapy.pipelines.images import ImagesPipeline
+from cartoonmad.items import Dm5Item
 
 
 class CartoonmadPipeline(object):
@@ -18,12 +19,19 @@ class CartoonmadPipeline(object):
 class ImagespiderPipeline(ImagesPipeline):
 
     def get_media_requests(self, item, info):
-        # 循环每一张图片地址下载，若传过来的不是集合则无需循环直接yield
-        if isinstance(item['imgurl'], str):
-            yield scrapy.Request(item['imgurl'], meta={'name': item['imgname'], 'folder': item['imgfolder']})
+
+        if isinstance(item, Dm5Item):
+            print u'下载图片', item['imgurl']
+            print u'保存路径', item['imgfolder'], item[imgname]
+            yield scrapy.Request(item['imgurl'], headers={'referer': item['imgreferer'], 'DNT': 1, 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'}, meta={'name': item['imgname'], 'folder': item['imgfolder']})
         else:
-            for image_url in item['imgurl']:
-                yield scrapy.Request(image_url, meta={'name': item['imgname'], 'folder': item['imgfolder']})
+
+            # 循环每一张图片地址下载，若传过来的不是集合则无需循环直接yield
+            if isinstance(item['imgurl'], str):
+                yield scrapy.Request(item['imgurl'], meta={'name': item['imgname'], 'folder': item['imgfolder']})
+            else:
+                for image_url in item['imgurl']:
+                    yield scrapy.Request(image_url, meta={'name': item['imgname'], 'folder': item['imgfolder']})
 
     # 重命名，若不重写这函数，图片名为哈希，就是一串乱七八糟的名字
     def file_path(self, request, response=None, info=None):

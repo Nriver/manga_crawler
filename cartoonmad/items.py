@@ -24,3 +24,13 @@ class ComicerItem(scrapy.Item):
     imgname = scrapy.Field()
     imgfolder = scrapy.Field()
     pass
+
+
+class Dm5Item(scrapy.Item):
+    # define the fields for your item here like:
+    # name = scrapy.Field()
+    imgurl = scrapy.Field()
+    imgname = scrapy.Field()
+    imgfolder = scrapy.Field()
+    imgreferer = scrapy.Field()
+    pass

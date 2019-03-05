@@ -2,7 +2,7 @@
 # @Author: Zengjq
 # @Date:   2019-03-04 16:25:03
 # @Last Modified by:   Zengjq
-# @Last Modified time: 2019-03-04 17:49:01
+# @Last Modified time: 2019-03-05 14:58:50
 import scrapy
 from cartoonmad.items import ComicerItem
 import os
@@ -41,9 +41,6 @@ class ComicerSpider(scrapy.Spider):
         manga_no = response.url.split('/')[-1].split('.')[0]
         manga_name = unicode(response.css('#intro_l > div.title > h1::text').extract()[0].strip().replace('?', ''))
         manga_save_folder = os.path.join(self.download_folder, manga_no + '_' + manga_name)
-        if not os.path.exists(manga_save_folder):
-            # 创建多级目录 os.makedirs
-            os.makedirs(manga_save_folder)
         # 提取章节
         chapters = response.css("#play_0 > ul > li > a")
         # 每个章节的页数(暂时不知道)
@@ -85,5 +82,7 @@ class ComicerSpider(scrapy.Spider):
             if os.path.exists(img_file_path):
                 # print 'skip', img_file_path
                 continue
+            if not os.path.exists(item['imgfolder']):
+                os.makedirs(item['imgfolder'])
             print item['imgurl']
             yield item
