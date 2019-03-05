@@ -2,7 +2,7 @@
 # @Author: Zengjq
 # @Date:   2019-03-04 16:25:03
 # @Last Modified by:   Zengjq
-# @Last Modified time: 2019-03-05 15:14:33
+# @Last Modified time: 2019-03-05 18:24:24
 import scrapy
 from cartoonmad.items import Dm5Item
 import os
@@ -117,7 +117,7 @@ class Dm5Spider(scrapy.Spider):
 
             # if index != 3:
             #     continue
-            yield scrapy.Request(chapter_link, cookies=cookies, meta={'proxy': proxy, 'manga_no': manga_no, 'chapter_no': chapter_no, 'manga_name': manga_name, 'chapter_name': chapter_name, 'chapters': chapters, 'manga_save_folder': manga_save_folder}, callback=self.parse_page)
+            yield scrapy.Request(chapter_link, cookies=cookies, meta={'proxy': proxy, 'manga_no': manga_no, 'chapter_no': chapter_no, 'manga_name': manga_name, 'chapter_name': chapter_name, 'manga_save_folder': manga_save_folder}, callback=self.parse_page)
 
     def parse_page(self, response):
         """
@@ -128,7 +128,6 @@ class Dm5Spider(scrapy.Spider):
         chapter_no = response.meta['chapter_no']
         manga_name = response.meta['manga_name']
         chapter_name = response.meta['chapter_name']
-        chapters = response.meta['chapters']
         manga_save_folder = response.meta['manga_save_folder']
         proxy = response.meta['proxy']
         # 关键的东西
@@ -148,7 +147,7 @@ class Dm5Spider(scrapy.Spider):
         current_page += 1
         data = {'cid': DM5_CID, 'page': DM5_PAGE, 'key': mkey, 'language': 1, 'gtk': 6, '_cid': DM5_CID, '_mid': DM5_MID, '_dt': DM5_VIEWSIGN_DT, '_sign': DM5_VIEWSIGN}
         pages_url = 'http://www.dm5.com/m' + str(data['cid']) + '/chapterfun.ashx?' + urllib.urlencode(data)
-        yield scrapy.Request(pages_url, cookies=cookies, meta={'proxy': proxy, 'manga_no': manga_no, 'chapter_no': chapter_no, 'manga_name': manga_name, 'chapter_name': chapter_name, 'chapters': chapters, 'manga_save_folder': manga_save_folder, 'data': data, 'current_page': current_page, 'page_count': page_count}, callback=self.parse_page_ext2)
+        yield scrapy.Request(pages_url, cookies=cookies, meta={'proxy': proxy, 'manga_no': manga_no, 'chapter_no': chapter_no, 'manga_name': manga_name, 'chapter_name': chapter_name, 'manga_save_folder': manga_save_folder, 'data': data, 'current_page': current_page, 'page_count': page_count}, callback=self.parse_page_ext2)
 
     def parse_page_ext2(self, response):
         """
@@ -158,7 +157,6 @@ class Dm5Spider(scrapy.Spider):
         chapter_no = response.meta['chapter_no']
         manga_name = response.meta['manga_name']
         chapter_name = response.meta['chapter_name']
-        chapters = response.meta['chapters']
         manga_save_folder = response.meta['manga_save_folder']
         data = response.meta['data']
         current_page = response.meta['current_page']
@@ -224,7 +222,7 @@ class Dm5Spider(scrapy.Spider):
             data['page'] = current_page
 
             pages_url = 'http://www.dm5.com/m' + str(data['cid']) + '/chapterfun.ashx?' + urllib.urlencode(data)
-            yield scrapy.Request(pages_url, cookies=cookies, headers={'Referer': 'http://www.dm5.com/m' + str(data['cid']) + '/'},  meta={'proxy': proxy, 'manga_no': manga_no, 'chapter_no': chapter_no, 'manga_name': manga_name, 'chapter_name': chapter_name, 'chapters': chapters, 'manga_save_folder': manga_save_folder, 'data': data, 'current_page': current_page, 'page_count': page_count}, callback=self.parse_page_ext2)
+            yield scrapy.Request(pages_url, cookies=cookies, headers={'Referer': 'http://www.dm5.com/m' + str(data['cid']) + '/'},  meta={'proxy': proxy, 'manga_no': manga_no, 'chapter_no': chapter_no, 'manga_name': manga_name, 'chapter_name': chapter_name, 'manga_save_folder': manga_save_folder, 'data': data, 'current_page': current_page, 'page_count': page_count}, callback=self.parse_page_ext2)
         except UnpackingError, e:
             print u'解包js错误 访问地址', response.url
             print u'当前页面', current_page
@@ -237,6 +235,6 @@ class Dm5Spider(scrapy.Spider):
                 data['page'] = current_page
 
                 pages_url = 'http://www.dm5.com/m' + str(data['cid']) + '/chapterfun.ashx?' + urllib.urlencode(data)
-                yield scrapy.Request(pages_url, cookies=cookies, headers={'Referer': 'http://www.dm5.com/m' + str(data['cid']) + '/'},  meta={'proxy': proxy, 'manga_no': manga_no, 'chapter_no': chapter_no, 'manga_name': manga_name, 'chapter_name': chapter_name, 'chapters': chapters, 'manga_save_folder': manga_save_folder, 'data': data, 'current_page': current_page, 'page_count': page_count}, callback=self.parse_page_ext2)
+                yield scrapy.Request(pages_url, cookies=cookies, headers={'Referer': 'http://www.dm5.com/m' + str(data['cid']) + '/'},  meta={'proxy': proxy, 'manga_no': manga_no, 'chapter_no': chapter_no, 'manga_name': manga_name, 'chapter_name': chapter_name, 'manga_save_folder': manga_save_folder, 'data': data, 'current_page': current_page, 'page_count': page_count}, callback=self.parse_page_ext2)
             else:
-                yield scrapy.Request(response.url, cookies=cookies, meta={'proxy': proxy, 'manga_no': manga_no, 'chapter_no': chapter_no, 'manga_name': manga_name, 'chapter_name': chapter_name, 'chapters': chapters, 'manga_save_folder': manga_save_folder, 'data': data, 'current_page': current_page, 'page_count': page_count, 'try_repr': True}, callback=self.parse_page_ext2, dont_filter=True)
+                yield scrapy.Request(response.url, cookies=cookies, meta={'proxy': proxy, 'manga_no': manga_no, 'chapter_no': chapter_no, 'manga_name': manga_name, 'chapter_name': chapter_name, 'manga_save_folder': manga_save_folder, 'data': data, 'current_page': current_page, 'page_count': page_count, 'try_repr': True}, callback=self.parse_page_ext2, dont_filter=True)

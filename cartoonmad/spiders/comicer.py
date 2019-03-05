@@ -2,7 +2,7 @@
 # @Author: Zengjq
 # @Date:   2019-03-04 16:25:03
 # @Last Modified by:   Zengjq
-# @Last Modified time: 2019-03-05 14:58:50
+# @Last Modified time: 2019-03-05 18:20:48
 import scrapy
 from cartoonmad.items import ComicerItem
 import os
@@ -54,7 +54,7 @@ class ComicerSpider(scrapy.Spider):
             if chapter_no[-1] == '话':
                 chapter_no = chapter_no[:-1]
 
-            yield scrapy.Request(chapter_link, meta={'manga_no': manga_no, 'chapter_no': chapter_no, 'manga_name': manga_name, 'chapter_name': chapter_name, 'chapters': chapters, 'manga_save_folder': manga_save_folder}, callback=self.parse_page)
+            yield scrapy.Request(chapter_link, meta={'manga_no': manga_no, 'chapter_no': chapter_no, 'manga_name': manga_name, 'chapter_name': chapter_name, 'manga_save_folder': manga_save_folder}, callback=self.parse_page)
 
     def parse_page(self, response):
         """
@@ -64,7 +64,6 @@ class ComicerSpider(scrapy.Spider):
         chapter_no = response.meta['chapter_no']
         manga_name = response.meta['manga_name']
         chapter_name = response.meta['chapter_name']
-        chapters = response.meta['chapters']
         manga_save_folder = response.meta['manga_save_folder']
         image_urls = re.findall('var qTcms_S_m_murl_e="(.*)";', response.body)[0].decode('base64').split('$qingtiandy$')
         chapters_pages_count = len(image_urls)
@@ -82,7 +81,5 @@ class ComicerSpider(scrapy.Spider):
             if os.path.exists(img_file_path):
                 # print 'skip', img_file_path
                 continue
-            if not os.path.exists(item['imgfolder']):
-                os.makedirs(item['imgfolder'])
-            print item['imgurl']
+            # print item['imgurl']
             yield item

@@ -2,7 +2,7 @@
 # @Author: Zengjq
 # @Date:   2018-09-21 12:54:57
 # @Last Modified by:   Zengjq
-# @Last Modified time: 2019-03-04 17:56:44
+# @Last Modified time: 2019-03-05 18:11:51
 
 import scrapy
 from cartoonmad.items import CartoonmadItem
@@ -45,11 +45,15 @@ class ChapterSpider(scrapy.Spider):
         # 名称含有中文
         manga_name = unicode(response.css('title::text').extract()[0][:-14].strip().replace('?', ''))
         manga_save_folder = os.path.join(self.download_folder, manga_no + '_' + manga_name)
-        if not os.path.exists(manga_save_folder):
-            # 创建多级目录 os.makedirs
-            os.makedirs(manga_save_folder)
-        #
+
         chapters = response.css("body > table > tr:nth-child(1) > td:nth-child(2) > table > tr:nth-child(4) > td > table > tr:nth-child(2) > td:nth-child(2) > table:nth-child(3) > tr > td a")
+
+        chapters_list = []
+        for chapter in chapters:
+            chapter_name = chapter.css('::text').extract()[0]
+            chapter_no = chapter_name.split(' ')[1]
+            chapters_list.append([chapter_name, chapter_no])
+
         # 页数比较麻烦 selector 怎么取都会取多
         chapters_pages = response.css("body > table > tr:nth-child(1) > td:nth-child(2) > table > tr:nth-child(4) > td > table > tr:nth-child(2) > td:nth-child(2) > table:nth-child(3) > tr > td font::text")
         # 每个章节的页数
@@ -73,7 +77,7 @@ class ChapterSpider(scrapy.Spider):
         #         item['imgname'] = str(y).zfill(3) + '.jpg'
         #         item['imgfolder'] = manga_no + '_' + manga_name + '/' + chapter_name
         #         yield item
-            yield scrapy.Request(chapter_link, meta={'manga_no': manga_no, 'chapter_no': chapter_no, 'manga_name': manga_name, 'chapter_name': chapter_name, 'chapters_pages_count': chapters_pages_count, 'chapters': chapters, 'manga_save_folder': manga_save_folder}, callback=self.parse_page)
+            yield scrapy.Request(chapter_link, meta={'manga_no': manga_no, 'chapter_no': chapter_no, 'manga_name': manga_name, 'chapter_name': chapter_name, 'chapters_pages_count': chapters_pages_count, 'chapters_list': chapters_list, 'manga_save_folder': manga_save_folder}, callback=self.parse_page)
 
     def parse_page(self, response):
         """
@@ -85,7 +89,7 @@ class ChapterSpider(scrapy.Spider):
         manga_name = response.meta['manga_name']
         chapter_name = response.meta['chapter_name']
         chapters_pages_count = response.meta['chapters_pages_count']
-        chapters = response.meta['chapters']
+        chapters_list = response.meta['chapters_list']
         manga_save_folder = response.meta['manga_save_folder']
 
         # image_url = response.css("img::attr(src)")[7].extract()
@@ -117,9 +121,9 @@ class ChapterSpider(scrapy.Spider):
                 image_url_prefix = image_url_parts[0] + '//' + image_url_parts[2] + '/' + image_url_parts[3] + '/'
                 break
 
-        for index, chapter in enumerate(chapters):
-            chapter_name = chapter.css('::text').extract()[0]
-            chapter_no = chapter_name.split(' ')[1]
+        for index, chapter in enumerate(chapters_list):
+            chapter_name = chapter[0]
+            chapter_no = chapter[1]
 
             # 下载图片
             # http://web.cartoonmad.com/c37sn562e81/3899/001/010.jpg
