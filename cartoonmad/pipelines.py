@@ -22,8 +22,10 @@ class ImagespiderPipeline(ImagesPipeline):
 
         if isinstance(item, Dm5Item):
             print u'下载图片', item['imgurl']
-            print u'保存路径', item['imgfolder'], item[imgname]
-            yield scrapy.Request(item['imgurl'], headers={'referer': item['imgreferer'], 'DNT': 1, 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'}, meta={'name': item['imgname'], 'folder': item['imgfolder']})
+            print u'保存路径', item['imgfolder'], item['imgname']
+            # print u'自定义header', item['imgheaders']
+            # print 'proxy', item['imgproxy']
+            yield scrapy.Request(item['imgurl'], headers=item['imgheaders'], meta={'proxy': item['imgproxy'], 'name': item['imgname'], 'folder': item['imgfolder']})
         else:
 
             # 循环每一张图片地址下载，若传过来的不是集合则无需循环直接yield
@@ -45,4 +47,9 @@ class ImagespiderPipeline(ImagesPipeline):
         # name = re.sub(r'[？\\*|“<>:/]', '', name)
         # # 分文件夹存储的关键：{0}对应着name；{1}对应着image_guid
         # filename = u'{0}/{1}'.format(name, image_guid)
-        return folder + '/' + name
+        image_file_path = folder + '/' + name
+
+        # dm5 特殊处理
+        if any(image_file_path.startswith(x) for x in['download/', 'download\\']):
+            image_file_path = image_file_path[9:]
+        return image_file_path

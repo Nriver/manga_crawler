@@ -2,7 +2,7 @@
 # @Author: Zengjq
 # @Date:   2019-03-04 16:25:03
 # @Last Modified by:   Zengjq
-# @Last Modified time: 2019-03-05 18:24:24
+# @Last Modified time: 2019-03-06 10:48:20
 import scrapy
 from cartoonmad.items import Dm5Item
 import os
@@ -29,12 +29,21 @@ http_proxy_address = '127.0.0.1:1080'
 def get_proxy():
     return 'http://' + http_proxy_address
 
+# requests proxy
+proxyDict = None
+
 
 def use_proxy():
+    # urllib2 proxy
     os.environ["http_proxy"] = 'http://' + http_proxy_address
     proxy = urllib2.ProxyHandler({'http': http_proxy_address})
     opener = urllib2.build_opener(proxy)
     urllib2.install_opener(opener)
+
+    # requests proxy
+    proxyDict = {
+        "http": get_proxy(),
+    }
 
 
 class Dm5Spider(scrapy.Spider):
@@ -77,20 +86,33 @@ class Dm5Spider(scrapy.Spider):
             # urls = ['http://www.dm5.com/manhua-wudengfendehuajia']
             urls = ['http://www.dm5.com/manhua-huashengjiangsanmingzhi/']
             urls = ['http://www.dm5.com/manhua-qunzixiamianshiyeshou/']
+            # urls = ['http://www.dm5.com/manhua-chengweimowangdefangfa/']
         for url in urls:
             print url
             yield scrapy.Request(url, meta={'proxy': ''}, cookies=cookies, callback=self.parse)
 
     def parse(self, response):
         # scrapy shell http://www.dm5.com/manhua-wudengfendehuajia
+
+        # with open('111.html', 'wb') as f:
+        #     f.write(response.body)
+
         if response.status == 404:
             if response.meta.get('dont_filter', None):
                 return
             if '您当前访问的页面不存在' in response.css('html > body::text')[0].extract().strip():
-                print 'Get 404, try use proxy'
+                print 'Detect 404, try use proxy'
                 use_proxy()
                 yield scrapy.Request(response.url, meta={'proxy': get_proxy()}, callback=self.parse, dont_filter=True)
             return
+
+        if response.status == 200:
+            if any('进行屏蔽处理' in x for x in response.css('body > div.view-comment > div > div.left-bar > div.warning-bar > p::text').extract()):
+                print 'Detect block, try use proxy'
+                use_proxy()
+                yield scrapy.Request(response.url, meta={'proxy': get_proxy()}, callback=self.parse, dont_filter=True)
+                return
+
         proxy = response.meta['proxy']
         # 漫画id
         manga_no = response.url.split('/')[-2]
@@ -188,7 +210,6 @@ class Dm5Spider(scrapy.Spider):
             item['imgname'] = image_url.split('/')[-1].split('_')[0].zfill(3) + '.jpg'
             # 不使用pipeline下载需要特殊处理下载地址
             item['imgfolder'] = settings.get('IMAGES_STORE') + '/' + manga_save_folder + '/' + chapter_no
-            item['imgreferer'] = 'http://www.dm5.com/m' + str(cid) + '/'
             # 准备下载图片
             image_save_path = os.path.join(item['imgfolder'], item['imgname'])
 
@@ -201,19 +222,30 @@ class Dm5Spider(scrapy.Spider):
                 headers = {'Host': host,
                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:63.0) Gecko/20100101 Firefox/63.0',
                            'Accept': '*/*',
+                           'Connection': 'close',
                            'Accept-Language': 'zh-CN,zh;q=0.8,en;q=0.5,en-US;q=0.3',
                            'Accept-Encoding': 'gzip, deflate',
                            'Referer': 'http://www.dm5.com/m' + str(data['cid']) + '-p' + str(current_page) + '/',
                            'DNT': '1',
                            }
                 # print 1111, image_url
-                req = urllib2.Request(image_url, headers=headers)
-                res = urllib2.urlopen(req)
-                # res = requests.get(image_url, headers=headers)
-                # print res
-                with open(image_save_path, 'wb') as f:
-                    f.write(res.read())
-                # yield item
+
+                # 使用urllib2下载图片
+                # req = urllib2.Request(image_url, headers=headers)
+                # res = urllib2.urlopen(req)
+                # # print res
+                # with open(image_save_path, 'wb') as f:
+                #     f.write(res.read())
+
+                # 使用requests下载图片
+                # res = requests.get(image_url, headers=headers, proxies=proxyDict)
+                # with open(image_save_path, 'wb') as f:
+                #     f.write(res.content)
+
+                # 使用自定义的imagepipeline下载图片
+                item['imgheaders'] = headers
+                item['imgproxy'] = proxy
+                yield item
 
             # 准备访问下一页
             current_page += 1

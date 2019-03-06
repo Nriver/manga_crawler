@@ -32,5 +32,7 @@ class Dm5Item(scrapy.Item):
     imgurl = scrapy.Field()
     imgname = scrapy.Field()
     imgfolder = scrapy.Field()
-    imgreferer = scrapy.Field()
+    # 设置header
+    imgheaders = scrapy.Field()
+    imgproxy = scrapy.Field()
     pass
