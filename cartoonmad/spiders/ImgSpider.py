@@ -2,7 +2,7 @@
 # @Author: Zengjq
 # @Date:   2018-09-21 12:54:57
 # @Last Modified by:   Zengjq
-# @Last Modified time: 2019-03-31 16:19:26
+# @Last Modified time: 2019-03-31 17:45:42
 
 import scrapy
 from cartoonmad.items import CartoonmadItem
@@ -14,6 +14,10 @@ class ChapterSpider(scrapy.Spider):
     name = 'manga'
     allowed_domains = ['cartoonmad.com']
     download_folder = 'cartoonmad'
+
+    custom_settings = {
+        'MEDIA_ALLOW_REDIRECTS': True,
+    }
 
     def start_requests(self):
         manga_no = getattr(self, 'no', None)
@@ -105,14 +109,12 @@ class ChapterSpider(scrapy.Spider):
         # https://www.cartoonmad.com/comic/comicpic.asp?file=/3080/001/001&rimg=1
         # http://web3.cartoonmad.com/home13712/3080/001/001.jpg
         image_url_prefix = ''
+        is_asp_request = False
         for x in image_urls:
             # new rule
             if 'comicpic.asp' in x:
-                # print x
-                if x.endswith('&rimg=1'):
-                    image_url_prefix = 'http://web3.cartoonmad.com/home13712/'
-                else:
-                    image_url_prefix = 'https://www.cartoonmad.com/home75378/'
+                is_asp_request = True
+                break
             elif 'cartoonmad' in x:
                 image_url = x
                 image_url_parts = image_url.split('/')
@@ -129,11 +131,12 @@ class ChapterSpider(scrapy.Spider):
             # http://web.cartoonmad.com/c37sn562e81/3899/001/010.jpg
 
             item = CartoonmadItem()
-            item['imgfolder'] = '/Users/nate/GitHub/manga_crawler/download/' + manga_save_folder + '/' + chapter_name
-            if not os.path.exists(item['imgfolder']):
-                os.makedirs(item['imgfolder'])
+            item['imgfolder'] = manga_save_folder + '/' + chapter_name
             for y in range(1, int(chapters_pages_count[index]) + 1):
-                item['imgurl'] = [image_url_prefix + manga_no + '/' + chapter_no + '/' + str(y).zfill(3) + '.jpg']
+                if is_asp_request:
+                    item['imgurl'] = 'https://www.cartoonmad.com/comic/comicpic.asp?file=/' + manga_no + '/' + chapter_no + '/' + str(y).zfill(3)
+                else:
+                    item['imgurl'] = [image_url_prefix + manga_no + '/' + chapter_no + '/' + str(y).zfill(3) + '.jpg']
                 print('download image: ', item['imgurl'])
                 item['imgname'] = str(y).zfill(3) + '.jpg'
                 img_file_path = item['imgfolder'] + '/' + item['imgname']
