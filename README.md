@@ -8,6 +8,16 @@ Spider names and the supported sites:
 | comicer | http://www.comicer.com/ | 
 | dm5 | http://www.dm5.com | 
 
+# install
+install requirements
+```
+pip install -r requirements.txt
+```
+If you are on widnows, you need to install pywin32 as well
+```
+pip install pywin32
+```
+
 # how to use
 In cmd type follows:
 ```
