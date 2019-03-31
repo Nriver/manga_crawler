@@ -2,7 +2,7 @@
 # @Author: Zengjq
 # @Date:   2019-03-04 16:25:03
 # @Last Modified by:   Zengjq
-# @Last Modified time: 2019-03-06 10:48:20
+# @Last Modified time: 2019-03-31 18:18:59
 import scrapy
 from cartoonmad.items import Dm5Item
 import os
@@ -163,12 +163,13 @@ class Dm5Spider(scrapy.Spider):
         # 最新的是这个
         # http://css99tel.cdndm5.com/v201903011820/dm5/js/chapternew_v22.js
         mkey = ''
-        DM5_CID = re.findall('var DM5_CID=(.*?);', response.body)[0]
-        DM5_MID = re.findall('var DM5_MID=(.*?);', response.body)[0]
-        DM5_VIEWSIGN_DT = re.findall('var DM5_VIEWSIGN_DT="(.*?)";', response.body)[0]
-        DM5_VIEWSIGN = re.findall('var DM5_VIEWSIGN="(.*?)";', response.body)[0]
+        response_body_str = str(response.body, response.encoding)
+        DM5_CID = re.findall('var DM5_CID=(.*?);', response_body_str)[0]
+        DM5_MID = re.findall('var DM5_MID=(.*?);', response_body_str)[0]
+        DM5_VIEWSIGN_DT = re.findall('var DM5_VIEWSIGN_DT="(.*?)";', response_body_str)[0]
+        DM5_VIEWSIGN = re.findall('var DM5_VIEWSIGN="(.*?)";', response_body_str)[0]
         DM5_PAGE = response.css('#chapterpager > span::text').extract()[0]
-        DM5_IMAGE_COUNT = re.findall('var DM5_IMAGE_COUNT=(.*?);', response.body)[0]
+        DM5_IMAGE_COUNT = re.findall('var DM5_IMAGE_COUNT=(.*?);', response_body_str)[0]
         page_count = DM5_IMAGE_COUNT
 
         current_page = 0
@@ -193,7 +194,9 @@ class Dm5Spider(scrapy.Spider):
         proxy = response.meta['proxy']
         # 返回一段js代码
         # jsbeautifier 1.7.5解码
-        packed_js = response.body
+        # python3 兼容
+        response_body_str = str(response.body, response.encoding)
+        packed_js = response_body_str
         try:
             if try_repr == True:
                 packed_js = repr(packed_js)
@@ -264,7 +267,8 @@ class Dm5Spider(scrapy.Spider):
         except UnpackingError as e:
             print('解包js错误 访问地址', response.url)
             print('当前页面', current_page)
-            print('返回内容', response.body)
+            response_body_str = str(response.body, response.encoding)
+            print('返回内容', response_body_str)
             if try_repr == True:
                 # 准备访问下一页
                 current_page += 1
