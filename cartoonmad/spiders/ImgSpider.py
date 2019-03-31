@@ -2,7 +2,7 @@
 # @Author: Zengjq
 # @Date:   2018-09-21 12:54:57
 # @Last Modified by:   Zengjq
-# @Last Modified time: 2019-03-05 18:11:51
+# @Last Modified time: 2019-03-31 16:19:26
 
 import scrapy
 from cartoonmad.items import CartoonmadItem
@@ -43,7 +43,7 @@ class ChapterSpider(scrapy.Spider):
         # 漫画id
         manga_no = response.url.split('/')[-1].split('.')[0]
         # 名称含有中文
-        manga_name = unicode(response.css('title::text').extract()[0][:-14].strip().replace('?', ''))
+        manga_name = str(response.css('title::text').extract()[0][:-14].strip().replace('?', ''))
         manga_save_folder = os.path.join(self.download_folder, manga_no + '_' + manga_name)
 
         chapters = response.css("body > table > tr:nth-child(1) > td:nth-child(2) > table > tr:nth-child(4) > td > table > tr:nth-child(2) > td:nth-child(2) > table:nth-child(3) > tr > td a")
@@ -129,11 +129,13 @@ class ChapterSpider(scrapy.Spider):
             # http://web.cartoonmad.com/c37sn562e81/3899/001/010.jpg
 
             item = CartoonmadItem()
+            item['imgfolder'] = '/Users/nate/GitHub/manga_crawler/download/' + manga_save_folder + '/' + chapter_name
+            if not os.path.exists(item['imgfolder']):
+                os.makedirs(item['imgfolder'])
             for y in range(1, int(chapters_pages_count[index]) + 1):
                 item['imgurl'] = [image_url_prefix + manga_no + '/' + chapter_no + '/' + str(y).zfill(3) + '.jpg']
-                # print 'download image: ', item['imgurl']
+                print('download image: ', item['imgurl'])
                 item['imgname'] = str(y).zfill(3) + '.jpg'
-                item['imgfolder'] = manga_save_folder + '/' + chapter_name
                 img_file_path = item['imgfolder'] + '/' + item['imgname']
                 # skip files that already downloaded
                 # print img_file_path

@@ -2,11 +2,9 @@
 # @Author: Zengjq
 # @Date:   2018-09-23 20:12:01
 # @Last Modified by:   Zengjq
-# @Last Modified time: 2019-03-05 05:15:05
+# @Last Modified time: 2019-03-31 15:54:52
 # Scrapy settings for wenku8 project
-import sys
-reload(sys)
-sys.setdefaultencoding('utf8')
+
 import os
 
 # Scrapy settings for cartoonmad project

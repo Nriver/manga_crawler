@@ -7,12 +7,18 @@ import scrapy
 from cartoonmad.items import Dm5Item
 import os
 import re
-import urllib
+import urllib.request
+import urllib.parse
+import urllib.error
 import jsbeautifier
 import jsbeautifier.unpackers.packer as packer
 import requests
-import urllib
-import urllib2
+import urllib.request
+import urllib.parse
+import urllib.error
+import urllib.request
+import urllib.error
+import urllib.parse
 from jsbeautifier.unpackers import UnpackingError
 from scrapy.utils.project import get_project_settings
 
@@ -36,9 +42,9 @@ proxyDict = None
 def use_proxy():
     # urllib2 proxy
     os.environ["http_proxy"] = 'http://' + http_proxy_address
-    proxy = urllib2.ProxyHandler({'http': http_proxy_address})
-    opener = urllib2.build_opener(proxy)
-    urllib2.install_opener(opener)
+    proxy = urllib.request.ProxyHandler({'http': http_proxy_address})
+    opener = urllib.request.build_opener(proxy)
+    urllib.request.install_opener(opener)
 
     # requests proxy
     proxyDict = {
@@ -88,7 +94,7 @@ class Dm5Spider(scrapy.Spider):
             urls = ['http://www.dm5.com/manhua-qunzixiamianshiyeshou/']
             # urls = ['http://www.dm5.com/manhua-chengweimowangdefangfa/']
         for url in urls:
-            print url
+            print(url)
             yield scrapy.Request(url, meta={'proxy': ''}, cookies=cookies, callback=self.parse)
 
     def parse(self, response):
@@ -101,14 +107,14 @@ class Dm5Spider(scrapy.Spider):
             if response.meta.get('dont_filter', None):
                 return
             if '您当前访问的页面不存在' in response.css('html > body::text')[0].extract().strip():
-                print 'Detect 404, try use proxy'
+                print('Detect 404, try use proxy')
                 use_proxy()
                 yield scrapy.Request(response.url, meta={'proxy': get_proxy()}, callback=self.parse, dont_filter=True)
             return
 
         if response.status == 200:
             if any('进行屏蔽处理' in x for x in response.css('body > div.view-comment > div > div.left-bar > div.warning-bar > p::text').extract()):
-                print 'Detect block, try use proxy'
+                print('Detect block, try use proxy')
                 use_proxy()
                 yield scrapy.Request(response.url, meta={'proxy': get_proxy()}, callback=self.parse, dont_filter=True)
                 return
@@ -116,7 +122,7 @@ class Dm5Spider(scrapy.Spider):
         proxy = response.meta['proxy']
         # 漫画id
         manga_no = response.url.split('/')[-2]
-        manga_name = unicode(response.css('body > div:nth-child(9) > section > div.banner_detail_form > div.info > p.title::text').extract()[0].strip().replace('?', ''))
+        manga_name = str(response.css('body > div:nth-child(9) > section > div.banner_detail_form > div.info > p.title::text').extract()[0].strip().replace('?', ''))
         manga_save_folder = os.path.join(self.download_folder, manga_name)
         # with open('111.txt', 'wb') as f:
         #     f.write(response.body)
@@ -128,7 +134,7 @@ class Dm5Spider(scrapy.Spider):
             chapter_name = chapter.attrib['title'].replace('·', ' ')
             if chapter_name is None or chapter_name == '':
                 # 空标题特殊处理
-                chapter_name = u'无标题'
+                chapter_name = '无标题'
                 chapter_no = chapter.css('a::text')[0].extract().strip()[1:-1]
             else:
                 chapter_no = chapter_name
@@ -168,7 +174,7 @@ class Dm5Spider(scrapy.Spider):
         current_page = 0
         current_page += 1
         data = {'cid': DM5_CID, 'page': DM5_PAGE, 'key': mkey, 'language': 1, 'gtk': 6, '_cid': DM5_CID, '_mid': DM5_MID, '_dt': DM5_VIEWSIGN_DT, '_sign': DM5_VIEWSIGN}
-        pages_url = 'http://www.dm5.com/m' + str(data['cid']) + '/chapterfun.ashx?' + urllib.urlencode(data)
+        pages_url = 'http://www.dm5.com/m' + str(data['cid']) + '/chapterfun.ashx?' + urllib.parse.urlencode(data)
         yield scrapy.Request(pages_url, cookies=cookies, meta={'proxy': proxy, 'manga_no': manga_no, 'chapter_no': chapter_no, 'manga_name': manga_name, 'chapter_name': chapter_name, 'manga_save_folder': manga_save_folder, 'data': data, 'current_page': current_page, 'page_count': page_count}, callback=self.parse_page_ext2)
 
     def parse_page_ext2(self, response):
@@ -217,7 +223,7 @@ class Dm5Spider(scrapy.Spider):
             if not os.path.exists(image_save_path):
                 if not os.path.exists(item['imgfolder']):
                     os.makedirs(item['imgfolder'])
-                print u'当前页面', manga_name, chapter_no, chapter_name, current_page, '/', page_count
+                print('当前页面', manga_name, chapter_no, chapter_name, current_page, '/', page_count)
                 host = image_url.split('//')[1].split('/')[0]
                 headers = {'Host': host,
                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:63.0) Gecko/20100101 Firefox/63.0',
@@ -253,12 +259,12 @@ class Dm5Spider(scrapy.Spider):
                 return
             data['page'] = current_page
 
-            pages_url = 'http://www.dm5.com/m' + str(data['cid']) + '/chapterfun.ashx?' + urllib.urlencode(data)
+            pages_url = 'http://www.dm5.com/m' + str(data['cid']) + '/chapterfun.ashx?' + urllib.parse.urlencode(data)
             yield scrapy.Request(pages_url, cookies=cookies, headers={'Referer': 'http://www.dm5.com/m' + str(data['cid']) + '/'},  meta={'proxy': proxy, 'manga_no': manga_no, 'chapter_no': chapter_no, 'manga_name': manga_name, 'chapter_name': chapter_name, 'manga_save_folder': manga_save_folder, 'data': data, 'current_page': current_page, 'page_count': page_count}, callback=self.parse_page_ext2)
-        except UnpackingError, e:
-            print u'解包js错误 访问地址', response.url
-            print u'当前页面', current_page
-            print u'返回内容', response.body
+        except UnpackingError as e:
+            print('解包js错误 访问地址', response.url)
+            print('当前页面', current_page)
+            print('返回内容', response.body)
             if try_repr == True:
                 # 准备访问下一页
                 current_page += 1
@@ -266,7 +272,7 @@ class Dm5Spider(scrapy.Spider):
                     return
                 data['page'] = current_page
 
-                pages_url = 'http://www.dm5.com/m' + str(data['cid']) + '/chapterfun.ashx?' + urllib.urlencode(data)
+                pages_url = 'http://www.dm5.com/m' + str(data['cid']) + '/chapterfun.ashx?' + urllib.parse.urlencode(data)
                 yield scrapy.Request(pages_url, cookies=cookies, headers={'Referer': 'http://www.dm5.com/m' + str(data['cid']) + '/'},  meta={'proxy': proxy, 'manga_no': manga_no, 'chapter_no': chapter_no, 'manga_name': manga_name, 'chapter_name': chapter_name, 'manga_save_folder': manga_save_folder, 'data': data, 'current_page': current_page, 'page_count': page_count}, callback=self.parse_page_ext2)
             else:
                 yield scrapy.Request(response.url, cookies=cookies, meta={'proxy': proxy, 'manga_no': manga_no, 'chapter_no': chapter_no, 'manga_name': manga_name, 'chapter_name': chapter_name, 'manga_save_folder': manga_save_folder, 'data': data, 'current_page': current_page, 'page_count': page_count, 'try_repr': True}, callback=self.parse_page_ext2, dont_filter=True)

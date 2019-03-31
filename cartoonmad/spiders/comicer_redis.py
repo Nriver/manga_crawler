@@ -29,7 +29,7 @@ class ComicerRedisSpider(RedisSpider):
         # scrapy shell http://www.comicer.com/comic/9544.html
         # 漫画id
         manga_no = response.url.split('/')[-1].split('.')[0]
-        manga_name = unicode(response.css('#intro_l > div.title > h1::text').extract()[0].strip().replace('?', ''))
+        manga_name = str(response.css('#intro_l > div.title > h1::text').extract()[0].strip().replace('?', ''))
         manga_save_folder = os.path.join(self.download_folder, manga_no + '_' + manga_name)
         # 提取章节
         chapters = response.css("#play_0 > ul > li > a")
@@ -57,11 +57,11 @@ class ComicerRedisSpider(RedisSpider):
         manga_save_folder = response.meta['manga_save_folder']
         image_urls = re.findall('var qTcms_S_m_murl_e="(.*)";', response.body)[0].decode('base64').split('$qingtiandy$')
         chapters_pages_count = len(image_urls)
-        print chapters_pages_count
+        print(chapters_pages_count)
         # 下载图片
         item = ComicerItem()
         for image_url in image_urls:
-            print image_url
+            print(image_url)
             item['imgurl'] = image_url
             item['imgname'] = image_url.split('/')[-1].split('_')[0].zfill(3) + '.jpg'
             item['imgfolder'] = manga_save_folder + '/' + chapter_name

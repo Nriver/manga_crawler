@@ -21,8 +21,8 @@ class ImagespiderPipeline(ImagesPipeline):
     def get_media_requests(self, item, info):
 
         if isinstance(item, Dm5Item):
-            print u'下载图片', item['imgurl']
-            print u'保存路径', item['imgfolder'], item['imgname']
+            print('下载图片', item['imgurl'])
+            print('保存路径', item['imgfolder'], item['imgname'])
             # print u'自定义header', item['imgheaders']
             # print 'proxy', item['imgproxy']
             yield scrapy.Request(item['imgurl'], headers=item['imgheaders'], meta={'proxy': item['imgproxy'], 'name': item['imgname'], 'folder': item['imgfolder']})
@@ -48,7 +48,7 @@ class ImagespiderPipeline(ImagesPipeline):
         # # 分文件夹存储的关键：{0}对应着name；{1}对应着image_guid
         # filename = u'{0}/{1}'.format(name, image_guid)
         image_file_path = folder + '/' + name
-
+        print(image_file_path)
         # dm5 特殊处理
         if any(image_file_path.startswith(x) for x in['download/', 'download\\']):
             image_file_path = image_file_path[9:]

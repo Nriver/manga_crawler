@@ -2,11 +2,12 @@
 # @Author: Zengjq
 # @Date:   2019-03-04 16:25:03
 # @Last Modified by:   Zengjq
-# @Last Modified time: 2019-03-05 18:20:48
+# @Last Modified time: 2019-03-31 16:49:51
 import scrapy
 from cartoonmad.items import ComicerItem
 import os
 import re
+import base64
 
 
 class ComicerSpider(scrapy.Spider):
@@ -39,7 +40,7 @@ class ComicerSpider(scrapy.Spider):
         # scrapy shell http://www.comicer.com/comic/9544.html
         # 漫画id
         manga_no = response.url.split('/')[-1].split('.')[0]
-        manga_name = unicode(response.css('#intro_l > div.title > h1::text').extract()[0].strip().replace('?', ''))
+        manga_name = str(response.css('#intro_l > div.title > h1::text').extract()[0].strip().replace('?', ''))
         manga_save_folder = os.path.join(self.download_folder, manga_no + '_' + manga_name)
         # 提取章节
         chapters = response.css("#play_0 > ul > li > a")
@@ -65,13 +66,17 @@ class ComicerSpider(scrapy.Spider):
         manga_name = response.meta['manga_name']
         chapter_name = response.meta['chapter_name']
         manga_save_folder = response.meta['manga_save_folder']
-        image_urls = re.findall('var qTcms_S_m_murl_e="(.*)";', response.body)[0].decode('base64').split('$qingtiandy$')
+        # print(type('var qTcms_S_m_murl_e="(.*)";'))
+        # print(type(response.body))
+        # 注意 response.encoding GB18030 不是 utf-8
+        image_urls = re.findall('var qTcms_S_m_murl_e="(.*)";', str(response.body, response.encoding))[0]
+        image_urls = base64.b64decode(image_urls.encode("utf-8")).decode("utf-8").split('$qingtiandy$')
         chapters_pages_count = len(image_urls)
-        print chapters_pages_count
+        print(chapters_pages_count)
         # 下载图片
         item = ComicerItem()
         for image_url in image_urls:
-            print image_url
+            print(image_url)
             item['imgurl'] = image_url
             item['imgname'] = image_url.split('/')[-1].split('_')[0].zfill(3) + '.jpg'
             item['imgfolder'] = manga_save_folder + '/' + chapter_name
