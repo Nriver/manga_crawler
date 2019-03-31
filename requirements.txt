@@ -1,3 +1,4 @@
 Scrapy==1.5.1
 jsbeautifier==1.9.0
 scrapy-redis==0.6.8
+requests==2.21.0
