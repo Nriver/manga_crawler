@@ -1,5 +1,6 @@
 # manga_crawler
-Download manga from online website with scrapy.
+Download manga from online website with scrapy. This program supports Python 3 on Windows and MacOS (not tested with Linux, but should be ok).
+
 Spider names and the supported sites:
 
 | Spider Name | Website |
