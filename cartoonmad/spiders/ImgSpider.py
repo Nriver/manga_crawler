@@ -2,7 +2,7 @@
 # @Author: Zengjq
 # @Date:   2018-09-21 12:54:57
 # @Last Modified by:   Zengjq
-# @Last Modified time: 2019-11-27 20:45:02
+# @Last Modified time: 2019-11-27 21:42:26
 
 import scrapy
 from cartoonmad.items import CartoonmadItem
@@ -110,10 +110,13 @@ class ChapterSpider(scrapy.Spider):
         # https://web3.cartoonmad.com/home13712/3080/001/001.jpg
         image_url_prefix = ''
         is_asp_request = False
+        has_suffix = False
         for x in image_urls:
             # new rule
             if 'comicpic.asp' in x:
                 is_asp_request = True
+                if '&rimg=1' in x:
+                    has_suffix = True
                 break
             elif 'cartoonmad' in x:
                 image_url = x
@@ -134,8 +137,9 @@ class ChapterSpider(scrapy.Spider):
             item['imgfolder'] = manga_save_folder + '/' + chapter_name
             for y in range(1, int(chapters_pages_count[index]) + 1):
                 if is_asp_request:
-
                     item['imgurl'] = 'https://www.cartoonmad.com/comic/comicpic.asp?file=/' + manga_no + '/' + chapter_no + '/' + str(y).zfill(3)
+                    if has_suffix:
+                        item['imgurl'] += '&rimg=1'
                 else:
                     item['imgurl'] = [image_url_prefix + manga_no + '/' + chapter_no + '/' + str(y).zfill(3) + '.jpg']
                 print('download image: ', item['imgurl'])
