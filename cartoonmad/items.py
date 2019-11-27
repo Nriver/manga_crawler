@@ -14,6 +14,8 @@ class CartoonmadItem(scrapy.Item):
     imgurl = scrapy.Field()
     imgname = scrapy.Field()
     imgfolder = scrapy.Field()
+    # 设置header
+    imgheaders = scrapy.Field()
     pass
 
 

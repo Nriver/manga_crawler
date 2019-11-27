@@ -2,7 +2,7 @@
 # @Author: Zengjq
 # @Date:   2018-09-21 12:54:57
 # @Last Modified by:   Zengjq
-# @Last Modified time: 2019-03-31 17:45:42
+# @Last Modified time: 2019-11-27 20:45:02
 
 import scrapy
 from cartoonmad.items import CartoonmadItem
@@ -68,16 +68,16 @@ class ChapterSpider(scrapy.Spider):
             chapters_pages_count.append(page_count)
         # 找到图片存储路径
         for index, chapter in enumerate(chapters):
-            chapter_link = 'http://www.cartoonmad.com' + response.css("body > table > tr:nth-child(1) > td:nth-child(2) > table > tr:nth-child(4) > td > table > tr:nth-child(2) > td:nth-child(2) > table:nth-child(3) > tr > td a::attr(href)")[index].extract()
+            chapter_link = 'https://www.cartoonmad.com' + response.css("body > table > tr:nth-child(1) > td:nth-child(2) > table > tr:nth-child(4) > td > table > tr:nth-child(2) > td:nth-child(2) > table:nth-child(3) > tr > td a::attr(href)")[index].extract()
             chapter_name = chapter.css('::text').extract()[0]
             chapter_no = chapter_name.split(' ')[1]
 
         #     # 下载图片
-        #     # http://web.cartoonmad.com/c37sn562e81/3899/001/010.jpg
+        #     # https://web.cartoonmad.com/c37sn562e81/3899/001/010.jpg
 
         #     item = CartoonmadItem()
         #     for y in range(int(chapters_pages_count[index])):
-        #         item['imgurl'] = ['http://web.cartoonmad.com/c37sn562e81/' + manga_no + '/' + chapter_no + '/' + str(y).zfill(3) + '.jpg']
+        #         item['imgurl'] = ['https://web.cartoonmad.com/c37sn562e81/' + manga_no + '/' + chapter_no + '/' + str(y).zfill(3) + '.jpg']
         #         item['imgname'] = str(y).zfill(3) + '.jpg'
         #         item['imgfolder'] = manga_no + '_' + manga_name + '/' + chapter_name
         #         yield item
@@ -107,7 +107,7 @@ class ChapterSpider(scrapy.Spider):
         # https://www.cartoonmad.com/home75378/4695/000/001.jpg
         #
         # https://www.cartoonmad.com/comic/comicpic.asp?file=/3080/001/001&rimg=1
-        # http://web3.cartoonmad.com/home13712/3080/001/001.jpg
+        # https://web3.cartoonmad.com/home13712/3080/001/001.jpg
         image_url_prefix = ''
         is_asp_request = False
         for x in image_urls:
@@ -128,12 +128,13 @@ class ChapterSpider(scrapy.Spider):
             chapter_no = chapter[1]
 
             # 下载图片
-            # http://web.cartoonmad.com/c37sn562e81/3899/001/010.jpg
+            # https://web.cartoonmad.com/c37sn562e81/3899/001/010.jpg
 
             item = CartoonmadItem()
             item['imgfolder'] = manga_save_folder + '/' + chapter_name
             for y in range(1, int(chapters_pages_count[index]) + 1):
                 if is_asp_request:
+
                     item['imgurl'] = 'https://www.cartoonmad.com/comic/comicpic.asp?file=/' + manga_no + '/' + chapter_no + '/' + str(y).zfill(3)
                 else:
                     item['imgurl'] = [image_url_prefix + manga_no + '/' + chapter_no + '/' + str(y).zfill(3) + '.jpg']
@@ -145,4 +146,16 @@ class ChapterSpider(scrapy.Spider):
                 if os.path.exists(img_file_path):
                     # print 'skip', img_file_path
                     continue
+                headers = {
+                    "Accept": "image/webp,image/apng,image/*,*/*;q=0.8",
+                    "Accept-Encoding": "gzip, deflate, br",
+                    "Accept-Language": "zh-CN,zh;q=0.9,ja;q=0.8,en;q=0.7",
+                    "Connection": "keep-alive",
+                    "DNT": "1",
+                    "Host": "www.cartoonmad.com",
+                    "Referer": response.url,
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36",
+                }
+                item['imgheaders'] = headers
+
                 yield item

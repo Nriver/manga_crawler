@@ -7,7 +7,7 @@
 
 import scrapy
 from scrapy.pipelines.images import ImagesPipeline
-from cartoonmad.items import Dm5Item
+from cartoonmad.items import Dm5Item, CartoonmadItem
 
 
 class CartoonmadPipeline(object):
@@ -26,8 +26,10 @@ class ImagespiderPipeline(ImagesPipeline):
             # print u'自定义header', item['imgheaders']
             # print 'proxy', item['imgproxy']
             yield scrapy.Request(item['imgurl'], headers=item['imgheaders'], meta={'proxy': item['imgproxy'], 'name': item['imgname'], 'folder': item['imgfolder']})
+        elif isinstance(item, CartoonmadItem):
+            if isinstance(item['imgurl'], str):
+                yield scrapy.Request(item['imgurl'], headers=item['imgheaders'], meta={'name': item['imgname'], 'folder': item['imgfolder']})
         else:
-
             # 循环每一张图片地址下载，若传过来的不是集合则无需循环直接yield
             if isinstance(item['imgurl'], str):
                 yield scrapy.Request(item['imgurl'], meta={'name': item['imgname'], 'folder': item['imgfolder']})

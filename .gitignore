@@ -3,6 +3,7 @@ download/
 nohup.out
 log.txt
 *.lnk
+test.bat
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
