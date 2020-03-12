@@ -2,7 +2,7 @@
 # @Author: Zengjq
 # @Date:   2018-09-23 20:12:01
 # @Last Modified by:   Zengjq
-# @Last Modified time: 2019-03-31 15:54:52
+# @Last Modified time: 2020-03-12 21:39:02
 # Scrapy settings for wenku8 project
 
 import os
@@ -29,14 +29,14 @@ NEWSPIDER_MODULE = 'cartoonmad.spiders'
 ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-#CONCURRENT_REQUESTS = 32
+CONCURRENT_REQUESTS = 32
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://doc.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
 # DOWNLOAD_DELAY = 1
 # The download delay setting will honor only one of:
-#CONCURRENT_REQUESTS_PER_DOMAIN = 16
+CONCURRENT_REQUESTS_PER_DOMAIN = 32
 #CONCURRENT_REQUESTS_PER_IP = 16
 
 # Disable cookies (enabled by default)
@@ -53,15 +53,17 @@ TELNETCONSOLE_ENABLED = False
 
 # Enable or disable spider middlewares
 # See https://doc.scrapy.org/en/latest/topics/spider-middleware.html
-# SPIDER_MIDDLEWARES = {
-#    'cartoonmad.middlewares.CartoonmadSpiderMiddleware': 543,
-#}
+SPIDER_MIDDLEWARES = {
+    # 'cartoonmad.middlewares.ProxyMiddleware': 300,
+    # 'cartoonmad.middlewares.CartoonmadSpiderMiddleware': 543,
+}
 
 # Enable or disable downloader middlewares
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
-# DOWNLOADER_MIDDLEWARES = {
-#    'cartoonmad.middlewares.CartoonmadDownloaderMiddleware': 543,
-#}
+DOWNLOADER_MIDDLEWARES = {
+    # 'cartoonmad.middlewares.ProxyMiddleware': 300,
+    # 'cartoonmad.middlewares.CartoonmadDownloaderMiddleware': 543,
+}
 
 # Enable or disable extensions
 # See https://doc.scrapy.org/en/latest/topics/extensions.html
@@ -103,6 +105,9 @@ ITEM_PIPELINES = {
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
 # Nate's custom settings
-# LOG_LEVEL = 'ERROR'  # to only display errors
+LOG_LEVEL = 'ERROR'  # to only display errors
 # LOG_FORMAT = '%(levelname)s: %(message)s'
-LOG_FILE = 'log.txt'
+import sys
+if sys.platform == 'Windows':
+    LOG_FILE = 'e:/manga_crawler_log.txt'
+LOG_FILE = 'manga_crawler_log.txt'
