@@ -4,6 +4,7 @@ nohup.out
 log.txt
 *.lnk
 test.bat
+manga_crawler_log.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
