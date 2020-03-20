@@ -2,7 +2,7 @@
 # @Author: Zengjq
 # @Date:   2018-09-21 12:54:57
 # @Last Modified by:   Zengjq
-# @Last Modified time: 2020-03-12 22:13:30
+# @Last Modified time: 2020-03-20 22:44:59
 
 import scrapy
 from cartoonmad.items import CartoonmadItem
@@ -49,6 +49,9 @@ class ChapterSpider(scrapy.Spider):
             yield scrapy.Request(url, self.parse)
 
     def parse(self, response):
+        """
+        scrapy shell https://www.cartoonmad.com/comic/2500.html
+        """
         # with open('tmp.txt', 'wb') as f:
         #     f.write(response.body)
         # 漫画id
@@ -58,22 +61,41 @@ class ChapterSpider(scrapy.Spider):
         manga_save_folder = os.path.join(self.download_folder, manga_no + '_' + manga_name)
         print('parse()', manga_no, manga_name)
 
-        chapters = response.css("body > table > tr:nth-child(1) > td:nth-child(2) > table > tr:nth-child(4) > td > table > tr:nth-child(2) > td:nth-child(2) > table:nth-child(3) > tr > td a")
+        # chapters = response.css("body > table > tr:nth-child(1) > td:nth-child(2) > table > tr:nth-child(4) > td > table > tr:nth-child(2) > td:nth-child(2) > table:nth-child(3) > tr > td a")
+        chapters = response.css("fieldset")[1].css("tr > td a")
 
         chapters_list = []
         for chapter in chapters:
             chapter_name = chapter.css('::text').extract()[0]
             chapter_no = chapter_name.split(' ')[1]
             chapters_list.append([chapter_name, chapter_no])
+        # print('chapters_list', chapters_list)
 
         # 页数比较麻烦 selector 怎么取都会取多
-        chapters_pages = response.css("body > table > tr:nth-child(1) > td:nth-child(2) > table > tr:nth-child(4) > td > table > tr:nth-child(2) > td:nth-child(2) > table:nth-child(3) > tr > td font::text")
+        # chapters_pages = response.css("body > table > tr:nth-child(1) > td:nth-child(2) > table > tr:nth-child(4) > td > table > tr:nth-child(2) > td:nth-child(2) > table:nth-child(3) > tr > td font::text")
+        chapters_pages = response.css("fieldset")[1].css("tr > td font::text")
         # 每个章节的页数
         chapters_pages_count = []
         # 简单粗暴的处理
         for x in range(len(chapters)):
             page_count = chapters_pages[x].extract()[1:-2]
             chapters_pages_count.append(page_count)
+
+        # 特殊处理
+        url_id = int(manga_no)
+        if url_id == 1893:
+            print('缺少页数特殊处理')
+            chapters_pages_count[0] = 11
+            chapters_pages_count[1] = 21
+        elif url_id == 2500:
+            print('缺少章节, 地址修正无效')
+            chapters_list = chapters_list[:5] + chapters_list[6:]
+            chapters_pages_count = chapters_pages_count[:5] + chapters_pages_count[6:]
+            print('chapters_list', chapters_list)
+        elif url_id == 3908:
+            print('缺少页数特殊处理')
+            chapters_pages_count[0] = 11
+
         # 找到图片存储路径
         for index, chapter in enumerate(chapters):
             chapter_link = 'https://www.cartoonmad.com' + response.css("body > table > tr:nth-child(1) > td:nth-child(2) > table > tr:nth-child(4) > td > table > tr:nth-child(2) > td:nth-child(2) > table:nth-child(3) > tr > td a::attr(href)")[index].extract()
@@ -160,6 +182,7 @@ class ChapterSpider(scrapy.Spider):
 
             item = CartoonmadItem()
             item['imgfolder'] = manga_save_folder + '/' + chapter_name
+            # print('chapters_pages_count', chapters_pages_count)
             for y in range(1, int(chapters_pages_count[index]) + 1):
                 if is_asp_request:
                     # print('是asp')
