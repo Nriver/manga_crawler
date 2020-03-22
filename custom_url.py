@@ -6434,8 +6434,9 @@ all_urls = [
 all_urls += list(range(8682, 8712))
 
 import os
-import sys
-if sys.platform == 'Windows':
+import platform
+print(platform.system())
+if platform.system() == 'Windows':
     downloaded = 'F:/GitHub/manga_crawler/download/cartoonmad'
 else:
     downloaded = '/Volumes/seagate/GitHub/manga_crawler/download/cartoonmad'
@@ -6445,8 +6446,8 @@ for x in os.listdir(downloaded):
     f_dict[url_id] = 1
 
 # 全遍历
-all_urls = list(range(1023, 8712))
-all_urls = list(range(7700, 8712))
+all_urls = list(range(1023, 8750))
+# all_urls = list(range(7700, 8712))
 
 urls = []
 for x in all_urls:

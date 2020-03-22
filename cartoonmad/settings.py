@@ -2,11 +2,11 @@
 # @Author: Zengjq
 # @Date:   2018-09-23 20:12:01
 # @Last Modified by:   Zengjq
-# @Last Modified time: 2020-03-12 21:39:02
+# @Last Modified time: 2020-03-21 21:50:32
 # Scrapy settings for wenku8 project
 
 import os
-
+import platform
 # Scrapy settings for cartoonmad project
 #
 # For simplicity, this file contains only settings considered important or
@@ -54,14 +54,14 @@ TELNETCONSOLE_ENABLED = False
 # Enable or disable spider middlewares
 # See https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 SPIDER_MIDDLEWARES = {
-    # 'cartoonmad.middlewares.ProxyMiddleware': 300,
+    'cartoonmad.middlewares.ProxyMiddleware': 300,
     # 'cartoonmad.middlewares.CartoonmadSpiderMiddleware': 543,
 }
 
 # Enable or disable downloader middlewares
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-    # 'cartoonmad.middlewares.ProxyMiddleware': 300,
+    'cartoonmad.middlewares.ProxyMiddleware': 300,
     # 'cartoonmad.middlewares.CartoonmadDownloaderMiddleware': 543,
 }
 
@@ -107,7 +107,7 @@ ITEM_PIPELINES = {
 # Nate's custom settings
 LOG_LEVEL = 'ERROR'  # to only display errors
 # LOG_FORMAT = '%(levelname)s: %(message)s'
-import sys
-if sys.platform == 'Windows':
+if platform.system() == 'Windows':
     LOG_FILE = 'e:/manga_crawler_log.txt'
-LOG_FILE = 'manga_crawler_log.txt'
+else:
+    LOG_FILE = 'manga_crawler_log.txt'

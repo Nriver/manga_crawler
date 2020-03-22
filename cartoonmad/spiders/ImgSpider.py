@@ -2,13 +2,13 @@
 # @Author: Zengjq
 # @Date:   2018-09-21 12:54:57
 # @Last Modified by:   Zengjq
-# @Last Modified time: 2020-03-20 22:44:59
+# @Last Modified time: 2020-03-21 21:37:09
 
 import scrapy
 from cartoonmad.items import CartoonmadItem
 import os
 from scrapy.crawler import CrawlerProcess
-# from custom_url import urls as custom_urls
+from custom_url import urls as custom_urls
 import re
 
 
@@ -40,8 +40,9 @@ class ChapterSpider(scrapy.Spider):
                     urls.append(new_url)
 
         if (manga_no is None or manga_no == '') and (manga_url == None or manga_url == ''):
-            urls = ['https://www.cartoonmad.com/comic/3899.html']
-            # urls = custom_urls
+            # urls = ['https://www.cartoonmad.com/comic/3899.html']
+            print('使用特定url')
+            urls = custom_urls
         print('准备开始')
         for url in urls:
             print(url)
