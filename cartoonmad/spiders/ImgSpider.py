@@ -206,6 +206,10 @@ class ChapterSpider(scrapy.Spider):
             if os.path.exists('download/' + img_file_path):
                 print('skip', img_file_path)
                 continue
+
+            if not os.path.exists('download/' + item['imgfolder']):
+                print('创建目录')
+                os.makedirs(os.getcwd() + '/download/' + item['imgfolder'])
             headers = {
                 "Accept": "image/webp,image/apng,image/*,*/*;q=0.8",
                 "Accept-Encoding": "gzip, deflate, br",

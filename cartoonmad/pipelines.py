@@ -9,6 +9,13 @@ import scrapy
 from scrapy.pipelines.images import ImagesPipeline
 from cartoonmad.items import Dm5Item, CartoonmadItem
 
+# 修复truncated图片
+# 针对类似https://www.cartoonmad.com/75566/5531/138/001.jpg
+# 这里的Dr.Stone 138话类似的图片格式处理 需要特殊处理
+# https://stackoverflow.com/questions/12984426/python-pil-ioerror-image-file-truncated-with-big-images
+from PIL import ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
+
 
 class CartoonmadPipeline(object):
 
