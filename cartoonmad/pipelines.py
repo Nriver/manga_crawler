@@ -27,6 +27,8 @@ class ImagespiderPipeline(ImagesPipeline):
             # print 'proxy', item['imgproxy']
             yield scrapy.Request(item['imgurl'], headers=item['imgheaders'], meta={'proxy': item['imgproxy'], 'name': item['imgname'], 'folder': item['imgfolder']})
         elif isinstance(item, CartoonmadItem):
+            print('pipeline 下载图片', item['imgurl'])
+            print('下载路径', item['imgfolder'])
             if isinstance(item['imgurl'], str):
                 yield scrapy.Request(item['imgurl'], headers=item['imgheaders'], meta={'name': item['imgname'], 'folder': item['imgfolder']})
         else:
@@ -50,7 +52,7 @@ class ImagespiderPipeline(ImagesPipeline):
         # # 分文件夹存储的关键：{0}对应着name；{1}对应着image_guid
         # filename = u'{0}/{1}'.format(name, image_guid)
         image_file_path = folder + '/' + name
-        print(image_file_path)
+        print('重命名', image_file_path)
         # dm5 特殊处理
         if any(image_file_path.startswith(x) for x in['download/', 'download\\']):
             image_file_path = image_file_path[9:]

@@ -6446,8 +6446,8 @@ for x in os.listdir(downloaded):
     f_dict[url_id] = 1
 
 # 全遍历
-all_urls = list(range(1023, 8750))
-# all_urls = list(range(7700, 8712))
+# all_urls = list(range(1023, 8750))
+all_urls = list(range(1670, 8750))
 
 urls = []
 for x in all_urls:

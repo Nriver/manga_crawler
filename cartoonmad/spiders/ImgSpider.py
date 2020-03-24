@@ -58,7 +58,7 @@ class ChapterSpider(scrapy.Spider):
         # 漫画id
         manga_no = response.url.split('/')[-1].split('.')[0]
         # 名称含有中文
-        manga_name = str(response.css('title::text').extract()[0][:-14].strip().replace('?', ''))
+        manga_name = str(response.css('title::text').extract()[0][:-14].strip().replace('?', '').strip())
         manga_save_folder = os.path.join(self.download_folder, manga_no + '_' + manga_name)
         print('parse()', manga_no, manga_name)
 
@@ -97,23 +97,19 @@ class ChapterSpider(scrapy.Spider):
             print('缺少页数特殊处理')
             chapters_pages_count[0] = 11
 
-        # 找到图片存储路径
+        # print('chapters', chapters)
         for index, chapter in enumerate(chapters):
             chapter_link = 'https://www.cartoonmad.com' + response.css("body > table > tr:nth-child(1) > td:nth-child(2) > table > tr:nth-child(4) > td > table > tr:nth-child(2) > td:nth-child(2) > table:nth-child(3) > tr > td a::attr(href)")[index].extract()
             chapter_name = chapter.css('::text').extract()[0]
             chapter_no = chapter_name.split(' ')[1]
 
-        #     # 下载图片
-        #     # https://web.cartoonmad.com/c37sn562e81/3899/001/010.jpg
+            check_path = 'download/' + manga_save_folder + '/' + chapter_name
+            if os.path.exists(check_path) and (int(chapters_pages_count[index]) == len(os.listdir(check_path))):
+                print('文件夹已存在, 文件都下载过了, 跳过')
+                continue
 
-        #     item = CartoonmadItem()
-        #     for y in range(int(chapters_pages_count[index])):
-        #         item['imgurl'] = ['https://web.cartoonmad.com/c37sn562e81/' + manga_no + '/' + chapter_no + '/' + str(y).zfill(3) + '.jpg']
-        #         item['imgname'] = str(y).zfill(3) + '.jpg'
-        #         item['imgfolder'] = manga_no + '_' + manga_name + '/' + chapter_name
-        #         yield item
             print('chapter_link', chapter_link)
-            yield scrapy.Request(chapter_link, meta={'manga_no': manga_no, 'chapter_no': chapter_no, 'manga_name': manga_name, 'chapter_name': chapter_name, 'chapters_pages_count': chapters_pages_count, 'chapters_list': chapters_list, 'manga_save_folder': manga_save_folder}, callback=self.parse_page)
+            yield scrapy.Request(chapter_link, meta={'manga_no': manga_no, 'chapter_no': chapter_no, 'manga_name': manga_name, 'chapter_name': chapter_name, 'chapters_pages_count': chapters_pages_count, 'chapters_list': chapters_list, 'manga_save_folder': manga_save_folder, 'chapters_index': index}, callback=self.parse_page)
 
     def parse_page(self, response):
         """
@@ -121,6 +117,7 @@ class ChapterSpider(scrapy.Spider):
         scrapy shell https://www.cartoonmad.com/comic/169800012046001.html
         scrapy shell https://www.cartoonmad.com/comic/872600014021002.html
         scrapy shell https://www.cartoonmad.com/comic/872600012021001.html
+        scrapy shell https://www.cartoonmad.cc/comic/870100022025003.html
         """
 
         manga_no = response.meta['manga_no']
@@ -130,6 +127,7 @@ class ChapterSpider(scrapy.Spider):
         chapters_pages_count = response.meta['chapters_pages_count']
         chapters_list = response.meta['chapters_list']
         manga_save_folder = response.meta['manga_save_folder']
+        chapters_index = response.meta['chapters_index']
         print('parse_page()', manga_no, manga_name)
 
         # 跳过广告
@@ -145,7 +143,7 @@ class ChapterSpider(scrapy.Spider):
         # print response.url
         # if 'cartoonmad.com' not in image_url or '/image/panen.png' in image_url:
         #     image_url = response.css("img::attr(src)")[6].extract()
-        print(response)
+        print('response', response)
         image_urls = response.css("img::attr(src)").extract()
         print('image_urls', image_urls)
         image_url = ''
@@ -160,7 +158,12 @@ class ChapterSpider(scrapy.Spider):
         has_suffix = False
         for x in image_urls:
             # new rule
+            if x in ['https://www.cartoonmad.com/image/rad1.gif', 'https://www.cartoonmad.com/image/panen.png', 'https://www.cartoonmad.com/image/rad.gif']:
+                continue
+            if 'cc.fun8.us' in x:
+                continue
             if 'comicpic.asp' in x:
+                # print('是asp')
                 is_asp_request = True
                 if '&rimg=1' in x:
                     has_suffix = True
@@ -173,44 +176,46 @@ class ChapterSpider(scrapy.Spider):
                 image_url_prefix = image_url_parts[0] + '//' + image_url_parts[2] + '/' + image_url_parts[3] + '/'
                 break
 
-        for index, chapter in enumerate(chapters_list):
-            chapter_name = chapter[0]
-            chapter_no = chapter[1]
+        # for index, chapter in enumerate(chapters_list):
+        index = chapters_index
+        chapter = chapters_list[index]
+        chapter_name = chapter[0]
+        chapter_no = chapter[1]
 
-            # 下载图片
-            # https://web.cartoonmad.com/c37sn562e81/3899/001/010.jpg
-            # https://www.cartoonmad.com/comic/comicpic.asp?file=/8726/001/002
+        # 下载图片
+        # https://web.cartoonmad.com/c37sn562e81/3899/001/010.jpg
+        # https://www.cartoonmad.com/comic/comicpic.asp?file=/8726/001/002
 
-            item = CartoonmadItem()
-            item['imgfolder'] = manga_save_folder + '/' + chapter_name
-            # print('chapters_pages_count', chapters_pages_count)
-            for y in range(1, int(chapters_pages_count[index]) + 1):
-                if is_asp_request:
-                    # print('是asp')
-                    item['imgurl'] = 'https://www.cartoonmad.com/comic/comicpic.asp?file=/' + manga_no + '/' + chapter_no + '/' + str(y).zfill(3)
-                    if has_suffix:
-                        item['imgurl'] += '&rimg=1'
-                else:
-                    # print('不是asp')
-                    item['imgurl'] = [image_url_prefix + manga_no + '/' + chapter_no + '/' + str(y).zfill(3) + '.jpg']
-                # print('download image: ', item['imgurl'])
-                item['imgname'] = str(y).zfill(3) + '.jpg'
-                img_file_path = item['imgfolder'] + '/' + item['imgname']
-                # skip files that already downloaded
-                # print(img_file_path)
-                if os.path.exists(img_file_path):
-                    print('skip', img_file_path)
-                    continue
-                headers = {
-                    "Accept": "image/webp,image/apng,image/*,*/*;q=0.8",
-                    "Accept-Encoding": "gzip, deflate, br",
-                    "Accept-Language": "zh-CN,zh;q=0.9,ja;q=0.8,en;q=0.7",
-                    "Connection": "keep-alive",
-                    "DNT": "1",
-                    "Host": "www.cartoonmad.com",
-                    "Referer": response.url,
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36",
-                }
-                item['imgheaders'] = headers
-                # print('图片地址', item['imgurl'])
-                yield item
+        item = CartoonmadItem()
+        item['imgfolder'] = manga_save_folder + '/' + chapter_name
+        # print('chapters_pages_count', chapters_pages_count)
+        for y in range(1, int(chapters_pages_count[index]) + 1):
+            if is_asp_request:
+                # print('是asp')
+                item['imgurl'] = 'https://www.cartoonmad.com/comic/comicpic.asp?file=/' + manga_no + '/' + chapter_no + '/' + str(y).zfill(3)
+                if has_suffix:
+                    item['imgurl'] += '&rimg=1'
+            else:
+                # print('不是asp')
+                item['imgurl'] = [image_url_prefix + manga_no + '/' + chapter_no + '/' + str(y).zfill(3) + '.jpg']
+            # print('download image: ', item['imgurl'])
+            item['imgname'] = str(y).zfill(3) + '.jpg'
+            img_file_path = item['imgfolder'] + '/' + item['imgname']
+            # skip files that already downloaded
+            # print('检测图片是否存在', img_file_path)
+            if os.path.exists('download/' + img_file_path):
+                print('skip', img_file_path)
+                continue
+            headers = {
+                "Accept": "image/webp,image/apng,image/*,*/*;q=0.8",
+                "Accept-Encoding": "gzip, deflate, br",
+                "Accept-Language": "zh-CN,zh;q=0.9,ja;q=0.8,en;q=0.7",
+                "Connection": "keep-alive",
+                "DNT": "1",
+                "Host": "www.cartoonmad.com",
+                "Referer": response.url,
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36",
+            }
+            item['imgheaders'] = headers
+            print('图片下载地址', item['imgurl'])
+            yield item
