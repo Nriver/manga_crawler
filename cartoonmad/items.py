@@ -49,3 +49,14 @@ class ManhuaguiItem(scrapy.Item):
     imgheaders = scrapy.Field()
     imgfolder = scrapy.Field()
     pass
+
+
+class DmzjItem(scrapy.Item):
+    # define the fields for your item here like:
+    # name = scrapy.Field()
+    imgurl = scrapy.Field()
+    imgname = scrapy.Field()
+    # 设置header
+    imgheaders = scrapy.Field()
+    imgfolder = scrapy.Field()
+    pass

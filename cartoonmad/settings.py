@@ -2,7 +2,7 @@
 # @Author: Zengjq
 # @Date:   2018-09-23 20:12:01
 # @Last Modified by:   Zengjq
-# @Last Modified time: 2020-03-21 21:50:32
+# @Last Modified time: 2020-05-27 22:54:23
 # Scrapy settings for wenku8 project
 
 import os
@@ -54,14 +54,14 @@ TELNETCONSOLE_ENABLED = False
 # Enable or disable spider middlewares
 # See https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 SPIDER_MIDDLEWARES = {
-    'cartoonmad.middlewares.ProxyMiddleware': 300,
+    # 'cartoonmad.middlewares.ProxyMiddleware': 300,
     # 'cartoonmad.middlewares.CartoonmadSpiderMiddleware': 543,
 }
 
 # Enable or disable downloader middlewares
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-    'cartoonmad.middlewares.ProxyMiddleware': 300,
+    # 'cartoonmad.middlewares.ProxyMiddleware': 300,
     # 'cartoonmad.middlewares.CartoonmadDownloaderMiddleware': 543,
 }
 
