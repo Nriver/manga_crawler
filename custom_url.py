@@ -6437,7 +6437,7 @@ import os
 import platform
 print(platform.system())
 if platform.system() == 'Windows':
-    downloaded = 'F:/GitHub/manga_crawler/download/cartoonmad'
+    downloaded = 'E:/GitHub/manga_crawler/download/cartoonmad'
 else:
     downloaded = '/Volumes/seagate/GitHub/manga_crawler/download/cartoonmad'
 f_dict = {}
