@@ -8,6 +8,7 @@ Spider names and the supported sites:
 | manga | https://www.cartoonmad.com/ | 
 | comicer | http://www.comicer.com/ | 
 | dm5 | http://www.dm5.com | 
+| dmzj | https://m.dmzj.com |
 
 # install
 install requirements
