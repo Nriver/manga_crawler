@@ -9,6 +9,7 @@ import os
 import re
 import base64
 import json
+from custom_url_dmzj import custom_url
 
 
 class DmzjSpider(scrapy.Spider):
@@ -23,7 +24,7 @@ class DmzjSpider(scrapy.Spider):
         if manga_no != None:
             mangas = manga_no.split(' ')
             for manga in mangas:
-                new_url = 'https://m.dmzj.com/info/' + manga_no + '.html'
+                new_url = 'https://m.dmzj.com/info/' + manga + '.html'
                 if new_url not in urls:
                     urls.append(new_url)
         if manga_url != None:
@@ -32,22 +33,31 @@ class DmzjSpider(scrapy.Spider):
                 if new_url not in urls:
                     urls.append(new_url)
         if (manga_no is None or manga_no == '') and (manga_url == None or manga_url == ''):
-            urls = ['https://m.dmzj.com/info/49810.html', ]
+            pass
+            # urls = ['https://m.dmzj.com/info/49810.html', ]
             # urls = ['https://m.dmzj.com/info/54366.html', ]
-
+            # urls = ['https://m.dmzj.com/info/1.html', ]
+            # urls = custom_url
+        # print('urls', urls)
         for url in urls:
+            print(url)
             yield scrapy.Request(url, self.parse)
 
     def parse(self, response):
         # scrapy shell https://m.dmzj.com/info/49810.html
-        # 漫画id
+        response_body = str(response.body, response.encoding)
+        # print(response_body)
         manga_no = response.url.split('/')[-1].split('.')[0]
+        if '因版权、国家法规等原因，此漫画暂不提供观看，敬请谅解。' in response_body:
+            print('不存在漫画', manga_no)
+            return
+        # 漫画id
         manga_name = str(response.css('#comicName::text').extract()[0].strip().replace('?', ''))
         print(manga_name)
         manga_save_folder = os.path.join(self.download_folder, manga_no + '_' + manga_name)
 
         # 提取章节
-        chapter_data = json.loads(re.findall('initIntroData\((.*)\);', str(response.body, response.encoding))[0])[0]
+        chapter_data = json.loads(re.findall('initIntroData\((.*)\);', response_body)[0])[0]
         chapters = chapter_data['data'][::-1]
 
         # 获取每个章节页面
@@ -89,7 +99,7 @@ class DmzjSpider(scrapy.Spider):
             # "Host:": "images.dmzj.com",
             # "Pragma:": "no-cache",
             "Referer:": response.url,
-            "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86": "Safari/537.36",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36",
         }
         item = DmzjItem()
         for index, image_url in enumerate(image_urls):
