@@ -110,8 +110,8 @@ class DmzjSpider(scrapy.Spider):
             item['imgheaders'] = headers
             img_file_path = item['imgfolder'] + '/' + item['imgname']
             # skip files that already downloaded
-            # print img_file_path
-            if os.path.exists(img_file_path):
+            # print(img_file_path)
+            if os.path.exists('download/' + img_file_path):
                 print('skip', img_file_path)
                 continue
             if not os.path.exists('download/' + item['imgfolder']):
